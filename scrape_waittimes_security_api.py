@@ -3,7 +3,6 @@ import csv
 import datetime
 from dateutil import parser
 import pytz
-import os
 
 def fetch_data_and_write_to_csv():
     # API URL
@@ -17,15 +16,8 @@ def fetch_data_and_write_to_csv():
         # Get data in JSON format
         data = response.json()
 
-        # Get today's date as string
-        today = datetime.date.today().strftime('%Y-%m-%d')
-        # Directory to save CSV
-        directory = './scrapes/'
-        # Make the directory if it does not exist
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        # File name would be today's date
-        filename = f'{directory}{today}.csv'
+        # File name is static now
+        filename = 'schiphol-security-scrape.csv'
 
         # Open the file in append mode
         with open(filename, 'a', newline='') as f:
