@@ -1,1 +1,0 @@
-!curl ipecho.net/plain
