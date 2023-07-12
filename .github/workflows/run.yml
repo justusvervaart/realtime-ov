@@ -59,7 +59,7 @@ jobs:
           pip install pandas requests
 
       - name: Run script
-        run: python scrape_ovfiets.py
+        run: python scrape_waittimes_security_api.py
 
       - name: List files in current directory
         run: ls -l
