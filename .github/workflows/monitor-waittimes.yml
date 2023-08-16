@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '*/15 * * * *'
 
 jobs:
   check-wait-times:
@@ -21,30 +21,31 @@ jobs:
         
         for key in $(echo $data | jq -r 'keys[]'); do
           if [[ $key == VF* ]]; then
-            wait_time=$(echo $data | jq -r --arg KEY $key '.[$KEY].waitTimeInSeconds')
-            if (( wait_time > 1800 )); then
-              threshold_exceeded_locations="${threshold_exceeded_locations}$key ($wait_time seconds)\n"
+            wait_time_in_seconds=$(echo $data | jq -r --arg KEY $key '.[$KEY].waitTimeInSeconds')
+            wait_time_in_minutes=$((wait_time_in_seconds / 60))
+            if (( wait_time_in_seconds > 60 )); then
+              threshold_exceeded_locations="${threshold_exceeded_locations}$key ($wait_time_in_minutes minutes)\n"
             fi
           fi
         done
 
         if [[ ! -z $threshold_exceeded_locations ]]; then
           echo -e "The following locations exceeded the threshold:\n$threshold_exceeded_locations" > threshold_exceeded.txt
-          echo "::set-output name=alert::true"
+          echo "alert=true" >> $GITHUB_ENV
         else
-          echo "::set-output name=alert::false"
+          echo "alert=false" >> $GITHUB_ENV
           echo "All VF locations are within the acceptable wait time."
         fi
 
     - name: Send Email Notification
-      if: steps.check-times.outputs.alert == 'true'
+      if: env.alert == 'true'
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
         server_port: 465
         username: ${{ secrets.MAIL_USERNAME }}
         password: ${{ secrets.MAIL_PASSWORD }}
-        subject: Threshold Exceeded Alert from GitHub Actions
+        subject: Wachttijd Schiphol Alert
         body: file://threshold_exceeded.txt
         to: ${{ secrets.MAIL_TO }}
         from: ${{ secrets.MAIL_USERNAME }}
