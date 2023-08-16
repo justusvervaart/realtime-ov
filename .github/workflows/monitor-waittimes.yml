@@ -33,3 +33,17 @@ jobs:
         else
           echo "All VF locations are within the acceptable wait time."
         fi
+
+    - name: Send Email Notification
+      if: failure()  # Dit zorgt ervoor dat deze stap alleen wordt uitgevoerd als een vorige stap is mislukt (bijv. de drempelwaarde werd overschreden)
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Threshold Exceeded Alert from GitHub Actions
+        body: Locations exceeding the threshold were detected in the API check.
+        to: ${{ secrets.MAIL_TO }}
+        from: ${{ secrets.MAIL_USERNAME }}
+
