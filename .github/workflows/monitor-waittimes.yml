@@ -13,16 +13,23 @@ jobs:
     - name: Install JQ
       run: sudo apt-get install jq
 
-    - name: Check Wait Times for All Locations
+    - name: Check Wait Times
       run: |
         data=$(curl -s "https://www.schiphol.nl/api/proxy/v3/waittimes/security-filters")
+        threshold_exceeded_locations=""
         
         for key in $(echo $data | jq -r 'keys[]'); do
+          if [[ $key == VF* ]]; then
             wait_time=$(echo $data | jq -r --arg KEY $key '.[$KEY].waitTimeInSeconds')
-            echo "Location $key has a wait time of $wait_time seconds."
-
             if (( wait_time > 3600 )); then
-              echo "Alert! Location $key has exceeded the threshold with a wait time of $wait_time seconds."
-              exit 1
+              threshold_exceeded_locations="$threshold_exceeded_locations$key ($wait_time seconds), "
             fi
+          fi
         done
+        
+        if [[ ! -z $threshold_exceeded_locations ]]; then
+          echo "Alert! Locations exceeding the threshold: $threshold_exceeded_locations"
+          exit 1
+        else
+          echo "All VF locations are within the acceptable wait time."
+        fi
