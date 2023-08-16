@@ -1,6 +1,8 @@
 name: Monitor Waittimes Securityefilters Schiphol
 
 on:
+  workflow_dispatch:
+  push:
   schedule:
     - cron: '0,15,30,45 * * * *'  # Voert elke 15 minuten uur uit
 
