@@ -1,10 +1,10 @@
-name: Monitor Waittimes Securityefilters Schiphol
+name: API Monitor
 
 on:
   workflow_dispatch:
   push:
   schedule:
-    - cron: '0,15,30,45 * * * *'  # Voert elke 15 minuten uur uit
+    - cron: '0 */2 * * *'
 
 jobs:
   check-wait-times:
@@ -30,14 +30,14 @@ jobs:
 
         if [[ ! -z $threshold_exceeded_locations ]]; then
           echo -e "The following locations exceeded the threshold:\n$threshold_exceeded_locations" > threshold_exceeded.txt
-          echo "Alert! Locations exceeding the threshold: $threshold_exceeded_locations"
-          exit 1
+          echo "::set-output name=alert::true"
         else
+          echo "::set-output name=alert::false"
           echo "All VF locations are within the acceptable wait time."
         fi
 
     - name: Send Email Notification
-      if: failure()
+      if: steps.check-times.outputs.alert == 'true'
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
