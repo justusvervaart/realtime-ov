@@ -21,13 +21,14 @@ jobs:
         for key in $(echo $data | jq -r 'keys[]'); do
           if [[ $key == VF* ]]; then
             wait_time=$(echo $data | jq -r --arg KEY $key '.[$KEY].waitTimeInSeconds')
-            if (( wait_time > 60 )); then
-              threshold_exceeded_locations="$threshold_exceeded_locations$key ($wait_time seconds), "
+            if (( wait_time > 3600 )); then
+              threshold_exceeded_locations="${threshold_exceeded_locations}$key ($wait_time seconds) "
             fi
           fi
         done
         
         if [[ ! -z $threshold_exceeded_locations ]]; then
+          echo "LOCATIONS=$threshold_exceeded_locations" >> $GITHUB_ENV
           echo "Alert! Locations exceeding the threshold: $threshold_exceeded_locations"
           exit 1
         else
@@ -35,7 +36,7 @@ jobs:
         fi
 
     - name: Send Email Notification
-      if: failure()  # Dit zorgt ervoor dat deze stap alleen wordt uitgevoerd als een vorige stap is mislukt (bijv. de drempelwaarde werd overschreden)
+      if: failure()
       uses: dawidd6/action-send-mail@v3
       with:
         server_address: smtp.gmail.com
@@ -43,7 +44,6 @@ jobs:
         username: ${{ secrets.MAIL_USERNAME }}
         password: ${{ secrets.MAIL_PASSWORD }}
         subject: Threshold Exceeded Alert from GitHub Actions
-        body: Locations exceeding the threshold were detected in the API check.
+        body: The following locations exceeded the threshold: ${{ env.LOCATIONS }}
         to: ${{ secrets.MAIL_TO }}
         from: ${{ secrets.MAIL_USERNAME }}
-
