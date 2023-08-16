@@ -1,0 +1,26 @@
+name: Monitor Waittimes Securityefilters Schiphol
+
+on:
+  schedule:
+    - cron: '0,15,30,45 * * * *'  # Voert elke 15 minuten uur uit
+
+jobs:
+  check-wait-times:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install JQ
+      run: sudo apt-get install jq
+
+    - name: Check Wait Times
+      run: |
+        data=$(curl -s "https://www.schiphol.nl/api/proxy/v3/waittimes/security-filters")
+        
+        for key in $(echo $data | jq -r 'keys[]'); do
+          if [[ $key == VF* ]]; then
+            wait_time=$(echo $data | jq -r --arg KEY $key '.[$KEY].waitTimeInSeconds')
+            if (( wait_time > 60 )); then
+              echo "Alert! Location $key has a wait time of $wait_time seconds."
+              exit 1
+            fi
+          fi
+        done
