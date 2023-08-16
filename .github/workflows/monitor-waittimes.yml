@@ -23,7 +23,7 @@ jobs:
           if [[ $key == VF* ]]; then
             wait_time_in_seconds=$(echo $data | jq -r --arg KEY $key '.[$KEY].waitTimeInSeconds')
             wait_time_in_minutes=$((wait_time_in_seconds / 60))
-            if (( wait_time_in_seconds > 60 )); then
+            if (( wait_time_in_seconds > 1800 )); then
               threshold_exceeded_locations="${threshold_exceeded_locations}$key ($wait_time_in_minutes minutes)\n"
             fi
           fi
