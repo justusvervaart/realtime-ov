@@ -16,7 +16,7 @@ jobs:
     - name: Check CSV values for VF Locations
       run: |
         #!/bin/bash
-        THRESHOLD=3600
+        THRESHOLD=1
         LOCATION_PREFIX="VF"
         awk -F',' '
           NR==1 {
