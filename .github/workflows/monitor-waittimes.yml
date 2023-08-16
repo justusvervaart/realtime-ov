@@ -14,6 +14,7 @@ jobs:
       run: sudo apt-get install jq
 
     - name: Check Wait Times
+      id: check-times
       run: |
         data=$(curl -s "https://www.schiphol.nl/api/proxy/v3/waittimes/security-filters")
         threshold_exceeded_locations=""
@@ -21,14 +22,14 @@ jobs:
         for key in $(echo $data | jq -r 'keys[]'); do
           if [[ $key == VF* ]]; then
             wait_time=$(echo $data | jq -r --arg KEY $key '.[$KEY].waitTimeInSeconds')
-            if (( wait_time > 3600 )); then
-              threshold_exceeded_locations="${threshold_exceeded_locations}$key ($wait_time seconds) "
+            if (( wait_time > 60 )); then
+              threshold_exceeded_locations="${threshold_exceeded_locations}$key ($wait_time seconds)\n"
             fi
           fi
         done
-        
+
         if [[ ! -z $threshold_exceeded_locations ]]; then
-          echo "LOCATIONS=$threshold_exceeded_locations" >> $GITHUB_ENV
+          echo -e "The following locations exceeded the threshold:\n$threshold_exceeded_locations" > threshold_exceeded.txt
           echo "Alert! Locations exceeding the threshold: $threshold_exceeded_locations"
           exit 1
         else
@@ -44,6 +45,6 @@ jobs:
         username: ${{ secrets.MAIL_USERNAME }}
         password: ${{ secrets.MAIL_PASSWORD }}
         subject: Threshold Exceeded Alert from GitHub Actions
-        body: The following locations exceeded the threshold: ${{ env.LOCATIONS }}
+        body: file://threshold_exceeded.txt
         to: ${{ secrets.MAIL_TO }}
         from: ${{ secrets.MAIL_USERNAME }}
