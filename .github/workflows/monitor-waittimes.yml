@@ -30,7 +30,7 @@ jobs:
         done
 
         if [[ ! -z $threshold_exceeded_locations ]]; then
-          echo -e "The following locations exceeded the threshold:\n$threshold_exceeded_locations" > threshold_exceeded.txt
+          echo -e "The following locations exceeded the threshold:\n$threshold_exceeded_locations\n\nGa naar Exploratory en check of er meer aan de hand is." > threshold_exceeded.txt
           echo "alert=true" >> $GITHUB_ENV
         else
           echo "alert=false" >> $GITHUB_ENV
