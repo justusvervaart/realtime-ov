@@ -1,0 +1,36 @@
+name: Monitor CSV
+
+on:
+  push:
+    paths:
+      - 'schiphol-security-scrape.csv'
+
+jobs:
+  check_csv:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Check CSV values for VF Locations
+      run: |
+        #!/bin/bash
+        THRESHOLD=3600
+        LOCATION_PREFIX="VF"
+        awk -F',' '
+          NR==1 {
+            for (i=1; i<=NF; i++) {
+              if ($i == "Location") {
+                loc_col_num=i;
+              } 
+              if ($i == "WaitTimeInSeconds") {
+                wait_col_num=i;
+              }
+            }
+          }
+          NR>1 && index($loc_col_num, "'$LOCATION_PREFIX'") == 1 && $wait_col_num > '$THRESHOLD' {
+            print "Location " $loc_col_num " in row " NR " has a wait time that exceeds the threshold!";
+            exit 1;
+          }
+        ' schiphol-security-scrape.csv
