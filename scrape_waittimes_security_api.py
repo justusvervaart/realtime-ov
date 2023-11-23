@@ -36,11 +36,10 @@ def fetch_data_and_write_to_csv():
                 # Convert back to string, without microseconds
                 updated_time_str = updated_time.strftime('%Y-%m-%dT%H:%M:%S')
                 # Write record to CSV
-                writer.writerow([
-                    key, 
-                    updated_time_str, 
-                    item['waitTimeInSeconds'], 
-                    item['waitTimeOutOfRange']  # Adding the new field here
-                ])
+                writer.writerow([key, updated_time_str, item['waitTimeInSeconds'], item['waitTimeOutOfRange']])
+                
     else:
         print(f'GET request failed with status code: {response.status_code}')
+
+# Call the function
+fetch_data_and_write_to_csv()
