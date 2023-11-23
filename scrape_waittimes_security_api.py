@@ -25,7 +25,7 @@ def fetch_data_and_write_to_csv():
             
             # Write header if file is empty
             if f.tell() == 0:
-                writer.writerow(['Location', 'Updated', 'WaitTimeInSeconds'])
+                writer.writerow(['Location', 'Updated', 'WaitTimeInSeconds', 'WaitTimeOutOfRange'])
 
             # Iterate over each record
             for key, item in data.items():
@@ -36,9 +36,11 @@ def fetch_data_and_write_to_csv():
                 # Convert back to string, without microseconds
                 updated_time_str = updated_time.strftime('%Y-%m-%dT%H:%M:%S')
                 # Write record to CSV
-                writer.writerow([key, updated_time_str, item['waitTimeInSeconds']])
+                writer.writerow([
+                    key, 
+                    updated_time_str, 
+                    item['waitTimeInSeconds'], 
+                    item['waitTimeOutOfRange']  # Adding the new field here
+                ])
     else:
         print(f'GET request failed with status code: {response.status_code}')
-
-# Call the function
-fetch_data_and_write_to_csv()
